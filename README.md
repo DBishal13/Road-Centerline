@@ -1,6 +1,6 @@
 # Centerline Calculation Notebook
 
-This notebook, `Notebooks/centerline.ipynb`, is designed to process a shapefile containing road polygons, densify the polygons by adding points along their edges, and then calculate the centerline of these polygons. The resulting centerlines are saved to a new shapefile.
+This notebook, `Notebooks/centerline.ipynb`, is designed to process a shapefile containing road polygons, densify the polygons by adding points along their edges, and then calculate the centerline of these polygons. The resulting centerlines are saved to a new shapefile. The notebook is based on the `pygeoops.centerline` module: [pygeoops.centerline documentation](https://pygeoops.readthedocs.io/en/stable/api/pygeoops.centerline.html)
 
 ## Prerequisites
 
