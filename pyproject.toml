@@ -1,0 +1,48 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "road-centerline"
+version = "0.1.0"
+description = "CRS-aware road centerline extraction from polygon geometries, worldwide."
+readme = "README.md"
+license = { file = "LICENSE" }
+authors = [{ name = "Bishal Dhungana" }]
+requires-python = ">=3.10"
+dependencies = [
+    "geopandas>=0.14",
+    "shapely>=2.0",
+    "pygeoops>=0.4",
+    "numpy>=1.24",
+    "pyproj>=3.5",
+    "pyogrio>=0.7",
+    "click>=8.1",
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "License :: OSI Approved :: MIT License",
+    "Topic :: Scientific/Engineering :: GIS",
+]
+
+[project.urls]
+Homepage = "https://github.com/DBishal13/Road-Centerline"
+
+[project.scripts]
+road-centerline = "road_centerline.cli:main"
+
+[project.optional-dependencies]
+dev = ["pytest>=7.4", "pytest-cov>=4.1", "ruff>=0.4"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/road_centerline"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
