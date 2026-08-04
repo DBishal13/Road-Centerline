@@ -27,6 +27,21 @@ def test_pygeoops_centerline_called_exactly_once(road_gdf_projected):
     assert mocked.call_count == 1
 
 
+def test_default_branch_pruning_does_not_truncate_junction(y_junction_polygon):
+    # pygeoops' own auto min_branch_length (-1) scales off average polygon
+    # width, which on a compact junction like this collapses the centerline
+    # to a single short trunk that never reaches any of the three arms. The
+    # fixed default (10.0) must recover the full branching centerline.
+    gdf = gpd.GeoDataFrame({"id": [1]}, geometry=[y_junction_polygon], crs="EPSG:32633")
+
+    result = compute_centerlines(gdf, densify=True, densify_distance=10.0)
+    line = result.geometry.iloc[0]
+
+    assert line.geom_type == "MultiLineString"
+    assert len(line.geoms) >= 3
+    assert line.length > 200
+
+
 def test_densify_false_still_produces_centerlines(road_gdf_projected):
     result = compute_centerlines(road_gdf_projected, densify=False)
     assert len(result) == len(road_gdf_projected)

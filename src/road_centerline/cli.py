@@ -39,7 +39,7 @@ def _level_from_count(count: int) -> int:
     show_default=True,
     help="Passed through to pygeoops.centerline.",
 )
-@click.option("--min-branch-length", type=float, default=-1, show_default=True)
+@click.option("--min-branch-length", type=float, default=10.0, show_default=True)
 @click.option("--simplify-tolerance", type=float, default=-0.25, show_default=True)
 @click.option("--pygeoops-densify-distance", type=float, default=-1, show_default=True)
 @click.option("-v", "--verbose", count=True, help="Increase log verbosity (-v, -vv).")

@@ -20,7 +20,7 @@ def compute_centerlines(
     target_crs: CRSLike | None = None,
     assume_crs: CRSLike | None = None,
     pygeoops_densify_distance: float = -1,
-    min_branch_length: float = -1,
+    min_branch_length: float = 10.0,
     simplifytolerance: float = -0.25,
     extend: bool = False,
 ) -> gpd.GeoDataFrame:
@@ -30,6 +30,13 @@ def compute_centerlines(
     `target_crs`, or an auto-estimated local UTM zone if the input is
     geographic, or the input's own CRS if already projected). The result is
     reprojected back to the input's original CRS before being returned.
+
+    min_branch_length defaults to a fixed 10m rather than pygeoops' own
+    auto mode (average-width-scaled). On compact, wide polygons like
+    highway lane splits/merges, average width is large relative to branch
+    length, so the auto threshold prunes real branches down to a stub that
+    never reaches the polygon's ends. A fixed value tied to densify_distance
+    avoids that; verified against real road-surface polygons.
     """
     working_gdf, original_crs = resolve_working_crs(gdf, target_crs, assume_crs)
 
