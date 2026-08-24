@@ -22,7 +22,10 @@ gdf = gpd.read_file("tests/fixtures/utrecht_roads.geojson")
 centerlines = compute_centerlines(gdf, densify_distance=10.0)
 ```
 
-![A real lane-split junction: input polygons (grey) with computed centerlines overlaid (blue)](assets/img/real-centerline-crop.png)
+The messiest interchange in the fixture, overlaid on real aerial imagery —
+input polygons on the left, extracted centerlines on the right:
+
+![A real motorway interchange: road-surface polygons on the left, extracted centerlines on the right, both overlaid on satellite imagery](assets/img/real-interchange-satellite.jpg)
 
 ## Robustness to invalid input
 

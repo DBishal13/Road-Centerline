@@ -13,7 +13,10 @@ in any input CRS, in any format geopandas can read or write.
 [How this compares](https://dbishal13.github.io/Road-Centerline/comparison/) ·
 [Changelog](CHANGELOG.md)
 
-![A road-crossing polygon and its computed centerline](https://raw.githubusercontent.com/DBishal13/Road-Centerline/main/docs/assets/img/concept-centerline.png)
+A real motorway interchange near Utrecht (OSM road-surface polygons, left)
+and its extracted centerlines (right), on actual aerial imagery:
+
+![A real motorway interchange: road-surface polygons on the left, extracted centerlines on the right, both overlaid on satellite imagery](https://raw.githubusercontent.com/DBishal13/Road-Centerline/main/docs/assets/img/real-interchange-satellite.jpg)
 
 Given a polygon representing a road's outline, `road-centerline` optionally
 densifies its edges (adding vertices so long, straight edges don't starve the

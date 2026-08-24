@@ -10,7 +10,10 @@ environment active:
 
     python benchmarks/generate_figures.py
 
-Writes PNGs to docs/assets/img/.
+Writes to docs/assets/img/. The satellite-overlay figure additionally needs
+network access (fetches basemap tiles via contextily) and the `contextily`
+package (`pip install -e ".[docs]"` covers it) — every other figure is
+offline and dependency-light by comparison.
 """
 
 from __future__ import annotations
@@ -36,10 +39,10 @@ POLYGON_FILL = "#dddddd"
 POLYGON_EDGE = "#999999"
 
 
-def _save(fig, name: str) -> None:
+def _save(fig, name: str, dpi: int = 150, **kwargs) -> None:
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     path = OUT_DIR / name
-    fig.savefig(path, dpi=150, bbox_inches="tight")
+    fig.savefig(path, dpi=dpi, bbox_inches="tight", **kwargs)
     plt.close(fig)
     print(f"wrote {path}")
 
@@ -127,20 +130,51 @@ def _crop_bbox() -> tuple:
     return (cx - CROP_RADIUS, cy - CROP_RADIUS, cx + CROP_RADIUS, cy + CROP_RADIUS)
 
 
-def figure_real_centerline_crop(gdf: gpd.GeoDataFrame, metric_centerlines: gpd.GeoDataFrame) -> None:
-    """One real, tightly-cropped junction from the OSM fixture: input polygons
-    with their computed centerlines overlaid. Proves the schematic diagrams
-    elsewhere hold up on messy real data too."""
-    working_gdf, _ = resolve_working_crs(gdf)
-    bbox = _crop_bbox()
-    polygons_clip = working_gdf.clip(bbox)
-    centerlines_clip = metric_centerlines.clip(bbox)
+# A full stack interchange (loop ramps, roundabout, motorway) near Utrecht —
+# found by rendering the whole fixture and looking for the densest tangle,
+# not cherry-picked from outside the dataset already used everywhere else.
+INTERCHANGE_BBOX_WGS84 = (5.058, 52.058, 5.082, 52.078)
 
-    fig, ax = plt.subplots(figsize=(4, 4))
-    polygons_clip.plot(ax=ax, facecolor=POLYGON_FILL, edgecolor=POLYGON_EDGE)
-    centerlines_clip.plot(ax=ax, color="tab:blue", linewidth=1.5)
-    ax.set_axis_off()  # real UTM coordinates aren't meaningful axis labels here
-    _save(fig, "real-centerline-crop.png")
+
+def figure_real_interchange_satellite(gdf: gpd.GeoDataFrame) -> None:
+    """The messiest real interchange in the fixture, overlaid on actual
+    aerial imagery: input road-surface polygons vs. the extracted
+    centerlines, side by side on the same satellite basemap. Requires
+    network access and the optional `contextily` dependency."""
+    import contextily as cx
+
+    centerlines = compute_centerlines(gdf)
+    gdf_clip = gdf.clip(INTERCHANGE_BBOX_WGS84).to_crs(3857)
+    centerlines_clip = centerlines.clip(INTERCHANGE_BBOX_WGS84).to_crs(3857)
+
+    fig, axes = plt.subplots(1, 2, figsize=(11, 5.6))
+
+    gdf_clip.plot(
+        ax=axes[0], facecolor="#ffdd00", edgecolor="#ffdd00", alpha=0.55, linewidth=0.5, zorder=2
+    )
+    axes[0].set_title("Input: road-surface polygons (OSM)", fontsize=11)
+
+    centerlines_clip.plot(ax=axes[1], color="#ffdd00", linewidth=1.5, zorder=2)
+    axes[1].set_title("compute_centerlines()", fontsize=11)
+
+    for ax in axes:
+        cx.add_basemap(ax, source=cx.providers.Esri.WorldImagery, zoom=16, attribution=False)
+        ax.set_axis_off()
+    fig.text(
+        0.005,
+        0.01,
+        "Imagery: Esri, Maxar, Earthstar Geographics, and the GIS User Community",
+        fontsize=6,
+        color="dimgray",
+    )
+    fig.tight_layout()
+    _save(
+        fig,
+        "real-interchange-satellite.jpg",
+        dpi=140,
+        format="jpg",
+        pil_kwargs={"quality": 82, "optimize": True},
+    )
 
 
 def figure_real_junction_crop(metric_centerlines: gpd.GeoDataFrame) -> None:
@@ -209,8 +243,8 @@ def main() -> None:
     figure_concept_centerline()
     figure_concept_network()
     figure_repair_before_after()
-    figure_real_centerline_crop(gdf, metric_centerlines)
     figure_real_junction_crop(metric_centerlines)
+    figure_real_interchange_satellite(gdf)
     figure_benchmark_chart(gdf)
 
 
