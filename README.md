@@ -13,7 +13,7 @@ in any input CRS, in any format geopandas can read or write.
 [How this compares](https://dbishal13.github.io/Road-Centerline/comparison/) ·
 [Changelog](CHANGELOG.md)
 
-![Road polygons overlaid with their computed centerlines](https://raw.githubusercontent.com/DBishal13/Road-Centerline/main/docs/assets/img/centerlines-overlay.png)
+![A road-crossing polygon and its computed centerline](https://raw.githubusercontent.com/DBishal13/Road-Centerline/main/docs/assets/img/concept-centerline.png)
 
 Given a polygon representing a road's outline, `road-centerline` optionally
 densifies its edges (adding vertices so long, straight edges don't starve the

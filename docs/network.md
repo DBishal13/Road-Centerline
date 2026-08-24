@@ -10,21 +10,31 @@ each polygon just becomes its own disconnected line.
 snaps endpoints within `snap_tolerance` of each other (transitively) into
 shared nodes, so the result is an actual routable graph:
 
-![Centerline endpoints snapped into shared junction nodes](assets/img/network-graph.png)
+![Three independent centerlines with nearby but distinct endpoints, snapped into one shared node](assets/img/concept-network.png)
 
-Orange nodes are junctions (three or more edges meet there); red nodes are
-plain endpoints. This is a real crop of the demo fixture — see [Demo](demo.md).
+Panel (a) is three independent centerlines with endpoints that are close but
+not identical — exactly what `compute_centerlines()` produces at a junction.
+Panel (b) is `build_network()`'s output: all three now share one node (red).
+
+The same thing on a real, messy road junction from the demo fixture (see
+[Demo](demo.md)):
+
+![A real junction from OSM data, with its centerline endpoints snapped into a shared node](assets/img/real-junction-crop.png)
 
 ## Usage
 
 ```python
 from road_centerline import compute_centerlines, build_network, to_networkx
 
-# Network building is distance-based, so do it before reprojecting to a
-# geographic CRS — process_file(..., build_network=True) handles this for
-# you automatically.
-centerlines = compute_centerlines(gdf, target_crs="EPSG:32633")
-edges, nodes = build_network(centerlines, snap_tolerance=1.0)
+centerlines = compute_centerlines(gdf)
+
+# Network building is distance-based. compute_centerlines() always returns
+# the input's original CRS — target_crs only controls the *working* math —
+# so reproject to a metric CRS yourself before networking, unless you're
+# going through process_file(..., build_network=True), which handles this
+# distinction for you automatically.
+metric_centerlines = centerlines.to_crs(centerlines.estimate_utm_crs())
+edges, nodes = build_network(metric_centerlines, snap_tolerance=1.0)
 
 # Optional: pip install road-centerline[network]
 graph = to_networkx(edges, nodes)

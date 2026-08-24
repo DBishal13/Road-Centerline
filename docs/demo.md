@@ -22,7 +22,7 @@ gdf = gpd.read_file("tests/fixtures/utrecht_roads.geojson")
 centerlines = compute_centerlines(gdf, densify_distance=10.0)
 ```
 
-![Input polygons with computed centerlines overlaid](assets/img/centerlines-overlay.png)
+![A real lane-split junction: input polygons (grey) with computed centerlines overlaid (blue)](assets/img/real-centerline-crop.png)
 
 ## Robustness to invalid input
 
@@ -62,7 +62,7 @@ edges, nodes = build_network(metric_centerlines, snap_tolerance=1.0)
 # 86 input polygons -> 230 edges, 316 nodes
 ```
 
-![Centerline endpoints snapped into shared junction nodes](assets/img/network-graph.png)
+![The same real junction's centerline endpoints snapped into a shared node](assets/img/real-junction-crop.png)
 
 !!! warning "CRS gotcha"
     `compute_centerlines(..., target_crs=...)` only controls the *working*
