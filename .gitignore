@@ -19,6 +19,9 @@ env/
 .coverage
 htmlcov/
 
+# Docs build output
+site/
+
 # Jupyter
 .ipynb_checkpoints/
 

@@ -1,0 +1,58 @@
+site_name: road-centerline
+site_description: CRS-aware road centerline extraction from polygon geometries, worldwide.
+site_url: https://dbishal13.github.io/Road-Centerline/
+repo_url: https://github.com/DBishal13/Road-Centerline
+repo_name: DBishal13/Road-Centerline
+edit_uri: edit/main/docs/
+
+theme:
+  name: material
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.sections
+    - navigation.top
+    - content.code.copy
+    - content.action.edit
+
+nav:
+  - Home: index.md
+  - Quickstart: quickstart.md
+  - Building a network: network.md
+  - Robustness at scale: robustness.md
+  - How this compares: comparison.md
+  - Demo: demo.md
+  - API reference: api.md
+  - Changelog: changelog.md
+
+markdown_extensions:
+  - pymdownx.snippets:
+      base_path: ["."]
+      check_paths: true
+  - pymdownx.highlight
+  - pymdownx.superfences
+  - admonition
+  - pymdownx.details
+  - tables
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            show_source: false
+            show_root_heading: true
+            docstring_style: google
+            heading_level: 3

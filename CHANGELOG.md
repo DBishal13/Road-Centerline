@@ -6,6 +6,19 @@ All notable changes to this project are documented here. Format follows
 
 ## [Unreleased]
 
+### Added
+
+- Documentation site (MkDocs Material, deployed to GitHub Pages via
+  `.github/workflows/docs.yml`) with an auto-generated API reference
+  (mkdocstrings), pages for network building / robustness / comparisons,
+  and a demo page.
+- `benchmarks/generate_figures.py`: generates the figures used in the README
+  and docs site from the real fixture data, so they can't drift out of sync
+  with the code.
+- `Notebooks/centerline.ipynb` rewritten to actually run against the real
+  fixture (it previously referenced a `Road.shp` that didn't exist in the
+  repo); CI now executes it on every push so it can't go stale again.
+
 ## [0.2.0] - 2026-08-24
 
 ### Added

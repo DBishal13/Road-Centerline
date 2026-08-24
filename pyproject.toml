@@ -30,12 +30,19 @@ classifiers = [
 
 [project.urls]
 Homepage = "https://github.com/DBishal13/Road-Centerline"
+Documentation = "https://dbishal13.github.io/Road-Centerline/"
+Changelog = "https://github.com/DBishal13/Road-Centerline/blob/main/CHANGELOG.md"
 
 [project.scripts]
 road-centerline = "road_centerline.cli:main"
 
 [project.optional-dependencies]
 network = ["networkx>=3.0"]
+docs = [
+    "mkdocs-material>=9.5",
+    "mkdocstrings[python]>=0.25",
+    "matplotlib>=3.8",
+]
 dev = [
     "pytest>=7.4",
     "pytest-cov>=4.1",
@@ -43,6 +50,9 @@ dev = [
     "networkx>=3.0",
     "build>=1.2",
     "twine>=5.0",
+    "matplotlib>=3.8",
+    "nbconvert>=7.16",
+    "ipykernel>=6.29",
 ]
 
 [tool.hatch.build.targets.wheel]
