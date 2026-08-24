@@ -147,11 +147,14 @@ def _crop_bbox() -> tuple:
 # A full stack interchange (loop ramps, roundabout, motorway) near Utrecht —
 # found by rendering the whole fixture and looking for the densest tangle,
 # not cherry-picked from outside the dataset already used everywhere else.
-# Tight crop on the interchange's central roundabout/loop-ramp cluster
-# (the visually densest part) rather than the full interchange including
-# its approach roads, so the loops are actually legible at doc width.
-INTERCHANGE_BBOX_WGS84 = (5.0635, 52.061, 5.0785, 52.0715)
-INTERCHANGE_ZOOM = 18
+# Tight crop on just the roundabout/loop-ramp core (not the full interchange
+# plus approach roads) so individual ramps and lane markings stay legible.
+INTERCHANGE_BBOX_WGS84 = (5.0675, 52.0625, 5.0775, 52.0705)
+INTERCHANGE_ZOOM = 19
+# Bright magenta: satellite imagery is all greens/tans/grays, so this is the
+# one color guaranteed not to blend into fields, dirt, pavement, or (unlike
+# yellow) actual yellow lane-marking paint.
+OVERLAY_COLOR = "#ff2079"
 
 
 def figure_real_interchange_satellite(gdf: gpd.GeoDataFrame) -> None:
@@ -165,14 +168,19 @@ def figure_real_interchange_satellite(gdf: gpd.GeoDataFrame) -> None:
     gdf_clip = gdf.clip(INTERCHANGE_BBOX_WGS84).to_crs(3857)
     centerlines_clip = centerlines.clip(INTERCHANGE_BBOX_WGS84).to_crs(3857)
 
-    fig, axes = plt.subplots(1, 2, figsize=(7, 3.8))
+    fig, axes = plt.subplots(1, 2, figsize=(8, 4.3))
 
     gdf_clip.plot(
-        ax=axes[0], facecolor="#ffdd00", edgecolor="#ffdd00", alpha=0.55, linewidth=0.6, zorder=2
+        ax=axes[0],
+        facecolor=OVERLAY_COLOR,
+        edgecolor=OVERLAY_COLOR,
+        alpha=0.55,
+        linewidth=0.6,
+        zorder=2,
     )
     axes[0].set_title("Input: road-surface polygons (OSM)", fontsize=9)
 
-    centerlines_clip.plot(ax=axes[1], color="#ffdd00", linewidth=1.8, zorder=2)
+    centerlines_clip.plot(ax=axes[1], color=OVERLAY_COLOR, linewidth=2.2, zorder=2)
     axes[1].set_title("compute_centerlines()", fontsize=9)
 
     for ax in axes:
