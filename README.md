@@ -183,10 +183,30 @@ walkthrough, and `benchmarks/compare.py` for the comparison above (add
 
 ### Releasing
 
+Releases are published by [`.github/workflows/release.yml`](.github/workflows/release.yml)
+whenever a `v*` tag is pushed, via [PyPI trusted publishing](https://docs.pypi.org/trusted-publishers/)
+(no API token needed). See [CHANGELOG.md](CHANGELOG.md) for the version
+history. To cut a release:
+
+1. Move the `[Unreleased]` entries in `CHANGELOG.md` under a new
+   `## [X.Y.Z] - YYYY-MM-DD` heading, and add its compare/tag links at the
+   bottom of the file.
+2. Bump `version` in `pyproject.toml` to match.
+3. Commit, then tag and push:
+   ```sh
+   git commit -am "Release vX.Y.Z"
+   git tag vX.Y.Z
+   git push origin main vX.Y.Z
+   ```
+4. CI builds, runs `twine check`, and publishes to PyPI automatically — the
+   tag must match `pyproject.toml`'s version or the workflow fails fast
+   before it builds anything.
+
+To build and check a release locally without publishing:
+
 ```sh
 python -m build
 twine check dist/*
-twine upload dist/*
 ```
 
 ## License
