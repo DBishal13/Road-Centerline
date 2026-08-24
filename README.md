@@ -3,9 +3,6 @@
 Extract road centerlines from polygon geometries (road contours) — worldwide,
 in any input CRS, in any format geopandas can read or write.
 
-> **Status:** not yet published to PyPI. Install from source (see
-> [Development](#development)) until the first release is uploaded.
-
 Given a polygon representing a road's outline, `road-centerline` optionally
 densifies its edges (adding vertices so long, straight edges don't starve the
 skeletonization algorithm of detail) and then computes the medial-axis
