@@ -36,6 +36,9 @@ nav:
   - API reference: api.md
   - Changelog: changelog.md
 
+extra_css:
+  - assets/css/extra.css
+
 markdown_extensions:
   - pymdownx.snippets:
       base_path: ["."]

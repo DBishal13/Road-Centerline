@@ -82,12 +82,12 @@ def figure_concept_network() -> None:
     gdf = gpd.GeoDataFrame({"id": [1, 2, 3]}, geometry=lines, crs=CRS)
     colors = ["tab:blue", "tab:orange", "tab:green"]
 
-    fig, axes = plt.subplots(1, 2, figsize=(8, 4))
+    fig, axes = plt.subplots(1, 2, figsize=(6, 3))
 
     ax = axes[0]
     for line, color in zip(lines, colors):
         _plot_line(ax, line, color=color)
-    ax.set_title("a) independent centerlines")
+    ax.set_title("a) independent centerlines", fontsize=9)
 
     ax = axes[1]
     edges, nodes = build_network(gdf, snap_tolerance=1.0)
@@ -96,7 +96,7 @@ def figure_concept_network() -> None:
     degree = edges["u"].value_counts().add(edges["v"].value_counts(), fill_value=0)
     junction = nodes[nodes["node_id"].isin(degree[degree >= 3].index)]
     junction.plot(ax=ax, color="tab:red", markersize=60, zorder=3)
-    ax.set_title("b) build_network(): snapped to one node")
+    ax.set_title("b) build_network(): snapped", fontsize=9)
 
     for ax in axes:
         ax.set_aspect("equal")
@@ -107,16 +107,30 @@ def figure_concept_network() -> None:
 
 
 def figure_repair_before_after() -> None:
-    bowtie = gpd.GeoSeries([Polygon([(0, 0), (10, 10), (10, 0), (0, 10)])])
-    repaired = repair_geometries(bowtie)
+    """make_valid on a self-intersecting bowtie splits it into two triangles
+    that occupy the exact same pixels as the original — so the fix has to be
+    shown by coloring the resulting parts differently, not by the shape
+    changing (it doesn't; only its validity and part count do)."""
+    bowtie = Polygon([(0, 0), (10, 10), (10, 0), (0, 10)])
+    repaired = repair_geometries(gpd.GeoSeries([bowtie])).iloc[0]
 
-    fig, axes = plt.subplots(1, 2, figsize=(8, 4.5))
-    for ax, geoms, letter in [
-        (axes[0], bowtie, "a) input"),
-        (axes[1], repaired, "b) after repair_invalid=True"),
-    ]:
-        geoms.plot(ax=ax, facecolor=POLYGON_FILL, edgecolor=POLYGON_EDGE)
-        ax.set_title(f"{letter}\nis_valid={geoms.iloc[0].is_valid}")
+    fig, axes = plt.subplots(1, 2, figsize=(6, 3.4))
+
+    ax = axes[0]
+    gpd.GeoSeries([bowtie]).plot(ax=ax, facecolor=POLYGON_FILL, edgecolor=POLYGON_EDGE)
+    ax.set_title(f"a) input\n{bowtie.geom_type}, is_valid={bowtie.is_valid}", fontsize=9)
+
+    ax = axes[1]
+    part_colors = ["tab:blue", "tab:orange"]
+    for part, color in zip(repaired.geoms, part_colors):
+        gpd.GeoSeries([part]).plot(ax=ax, facecolor=color, edgecolor="white", alpha=0.85)
+    ax.set_title(
+        f"b) after repair_invalid=True\n{repaired.geom_type} of {len(repaired.geoms)}, "
+        f"is_valid={repaired.is_valid}",
+        fontsize=9,
+    )
+
+    for ax in axes:
         ax.set_aspect("equal")
     fig.tight_layout()
     _save(fig, "repair-before-after.png")
@@ -133,7 +147,11 @@ def _crop_bbox() -> tuple:
 # A full stack interchange (loop ramps, roundabout, motorway) near Utrecht —
 # found by rendering the whole fixture and looking for the densest tangle,
 # not cherry-picked from outside the dataset already used everywhere else.
-INTERCHANGE_BBOX_WGS84 = (5.058, 52.058, 5.082, 52.078)
+# Tight crop on the interchange's central roundabout/loop-ramp cluster
+# (the visually densest part) rather than the full interchange including
+# its approach roads, so the loops are actually legible at doc width.
+INTERCHANGE_BBOX_WGS84 = (5.0635, 52.061, 5.0785, 52.0715)
+INTERCHANGE_ZOOM = 18
 
 
 def figure_real_interchange_satellite(gdf: gpd.GeoDataFrame) -> None:
@@ -147,24 +165,26 @@ def figure_real_interchange_satellite(gdf: gpd.GeoDataFrame) -> None:
     gdf_clip = gdf.clip(INTERCHANGE_BBOX_WGS84).to_crs(3857)
     centerlines_clip = centerlines.clip(INTERCHANGE_BBOX_WGS84).to_crs(3857)
 
-    fig, axes = plt.subplots(1, 2, figsize=(11, 5.6))
+    fig, axes = plt.subplots(1, 2, figsize=(7, 3.8))
 
     gdf_clip.plot(
-        ax=axes[0], facecolor="#ffdd00", edgecolor="#ffdd00", alpha=0.55, linewidth=0.5, zorder=2
+        ax=axes[0], facecolor="#ffdd00", edgecolor="#ffdd00", alpha=0.55, linewidth=0.6, zorder=2
     )
-    axes[0].set_title("Input: road-surface polygons (OSM)", fontsize=11)
+    axes[0].set_title("Input: road-surface polygons (OSM)", fontsize=9)
 
-    centerlines_clip.plot(ax=axes[1], color="#ffdd00", linewidth=1.5, zorder=2)
-    axes[1].set_title("compute_centerlines()", fontsize=11)
+    centerlines_clip.plot(ax=axes[1], color="#ffdd00", linewidth=1.8, zorder=2)
+    axes[1].set_title("compute_centerlines()", fontsize=9)
 
     for ax in axes:
-        cx.add_basemap(ax, source=cx.providers.Esri.WorldImagery, zoom=16, attribution=False)
+        cx.add_basemap(
+            ax, source=cx.providers.Esri.WorldImagery, zoom=INTERCHANGE_ZOOM, attribution=False
+        )
         ax.set_axis_off()
     fig.text(
         0.005,
         0.01,
         "Imagery: Esri, Maxar, Earthstar Geographics, and the GIS User Community",
-        fontsize=6,
+        fontsize=5,
         color="dimgray",
     )
     fig.tight_layout()
@@ -173,7 +193,7 @@ def figure_real_interchange_satellite(gdf: gpd.GeoDataFrame) -> None:
         "real-interchange-satellite.jpg",
         dpi=140,
         format="jpg",
-        pil_kwargs={"quality": 82, "optimize": True},
+        pil_kwargs={"quality": 85, "optimize": True},
     )
 
 

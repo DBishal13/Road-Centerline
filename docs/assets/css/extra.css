@@ -1,0 +1,9 @@
+/* Figures are generated at a fixed pixel size for source clarity; cap their
+   display width so they read as inline diagrams, not full-bleed banners. */
+.md-content img {
+  max-width: 480px;
+  width: 100%;
+  height: auto;
+  display: block;
+  margin: 1em auto;
+}

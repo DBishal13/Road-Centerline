@@ -16,7 +16,7 @@ in any input CRS, in any format geopandas can read or write.
 A real motorway interchange near Utrecht (OSM road-surface polygons, left)
 and its extracted centerlines (right), on actual aerial imagery:
 
-![A real motorway interchange: road-surface polygons on the left, extracted centerlines on the right, both overlaid on satellite imagery](https://raw.githubusercontent.com/DBishal13/Road-Centerline/main/docs/assets/img/real-interchange-satellite.jpg)
+<img src="https://raw.githubusercontent.com/DBishal13/Road-Centerline/main/docs/assets/img/real-interchange-satellite.jpg" width="600" alt="A real motorway interchange: road-surface polygons on the left, extracted centerlines on the right, both overlaid on satellite imagery">
 
 Given a polygon representing a road's outline, `road-centerline` optionally
 densifies its edges (adding vertices so long, straight edges don't starve the
@@ -86,7 +86,7 @@ walkthrough against real OSM road polygons
 road-centerline wraps) and [`centerline`](https://github.com/fitodic/centerline)
 (the other dedicated PyPI package for this task):
 
-![Wall time comparison: road-centerline, raw pygeoops, and the centerline package](https://raw.githubusercontent.com/DBishal13/Road-Centerline/main/docs/assets/img/benchmark-chart.png)
+<img src="https://raw.githubusercontent.com/DBishal13/Road-Centerline/main/docs/assets/img/benchmark-chart.png" width="480" alt="Wall time comparison: road-centerline, raw pygeoops, and the centerline package">
 
 road-centerline is slower than calling `pygeoops` directly — that gap is the
 cost of CRS resolution, densification, repair, and attributes happening
