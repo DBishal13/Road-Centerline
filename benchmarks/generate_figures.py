@@ -180,11 +180,15 @@ def figure_real_interchange_satellite(gdf: gpd.GeoDataFrame) -> None:
 
     row = gdf[gdf["osm_id"] == INTERCHANGE_OSM_ID]
     # The default simplifytolerance (-0.25, pygeoops' own auto mode) visibly
-    # cuts the corner on this loop ramp's tight curve radius; a smaller
-    # magnitude hugs the actual pavement much more closely without the
-    # jaggedness of no simplification (0). This is a per-figure tuning
-    # choice for a tight-radius loop, not a change to the library's default.
-    centerline = compute_centerlines(row, simplifytolerance=-0.05)
+    # cuts the corner on this loop ramp's tight curve radius. But this one
+    # polygon also has a long straight section, and dropping the magnitude
+    # too far (tested -0.05) reintroduces the Voronoi skeleton's natural
+    # zigzag noise there — less simplification hugs curves better but stops
+    # smoothing out that noise. -0.1 was the best balance of the values
+    # tested: hugs the loop closely without visibly zigzagging the straight
+    # run. This is a per-figure tuning choice, not a change to the library's
+    # default.
+    centerline = compute_centerlines(row, simplifytolerance=-0.1)
     row_clip = row.to_crs(3857).clip(INTERCHANGE_BBOX_3857)
     centerline_clip = centerline.to_crs(3857).clip(INTERCHANGE_BBOX_3857)
 
