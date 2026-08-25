@@ -179,7 +179,12 @@ def figure_real_interchange_satellite(gdf: gpd.GeoDataFrame) -> None:
     import contextily as cx
 
     row = gdf[gdf["osm_id"] == INTERCHANGE_OSM_ID]
-    centerline = compute_centerlines(row)
+    # The default simplifytolerance (-0.25, pygeoops' own auto mode) visibly
+    # cuts the corner on this loop ramp's tight curve radius; a smaller
+    # magnitude hugs the actual pavement much more closely without the
+    # jaggedness of no simplification (0). This is a per-figure tuning
+    # choice for a tight-radius loop, not a change to the library's default.
+    centerline = compute_centerlines(row, simplifytolerance=-0.05)
     row_clip = row.to_crs(3857).clip(INTERCHANGE_BBOX_3857)
     centerline_clip = centerline.to_crs(3857).clip(INTERCHANGE_BBOX_3857)
 
