@@ -24,6 +24,7 @@ from pathlib import Path
 import geopandas as gpd
 import matplotlib.pyplot as plt
 import pygeoops
+from matplotlib import patheffects
 from shapely.geometry import LineString, Polygon, box
 from shapely.ops import unary_union
 
@@ -144,64 +145,68 @@ def _crop_bbox() -> tuple:
     return (cx - CROP_RADIUS, cy - CROP_RADIUS, cx + CROP_RADIUS, cy + CROP_RADIUS)
 
 
-# A full stack interchange (loop ramps, roundabout, motorway) near Utrecht —
-# found by rendering the whole fixture and looking for the densest tangle,
-# not cherry-picked from outside the dataset already used everywhere else.
-# Tight crop on just the roundabout/loop-ramp core (not the full interchange
-# plus approach roads) so individual ramps and lane markings stay legible.
-INTERCHANGE_BBOX_WGS84 = (5.0675, 52.0625, 5.0775, 52.0705)
-INTERCHANGE_ZOOM = 19
-# Bright magenta: satellite imagery is all greens/tans/grays, so this is the
-# one color guaranteed not to blend into fields, dirt, pavement, or (unlike
-# yellow) actual yellow lane-marking paint.
-OVERLAY_COLOR = "#ff2079"
+# One real road-surface polygon near a stack interchange outside Utrecht:
+# a motorway segment with an attached exit ramp and a loop ramp, all as one
+# connected polygon. Found by rendering the whole fixture, locating its
+# densest tangle, then picking the single polygon responsible for the most
+# structurally interesting part of it (main line + branch + loop) rather
+# than cropping a bbox where ~20 separate carriageway/ramp polygons overlap
+# — that reads as chaotic spaghetti even though each line is individually
+# correct, since it's really N separate correct answers drawn on top of
+# each other. One clearly-bounded polygon in, one branching+looping
+# centerline out is a far more honest demonstration of the same mechanism.
+INTERCHANGE_OSM_ID = 1029265257
+# Crop to just the branch+loop cluster (where the exit ramp splits off and
+# loops back), not this polygon's full ~2.9km extent, so it fills the frame
+# and individual lanes/vehicles are visible rather than a thin sliver.
+INTERCHANGE_BBOX_3857 = (563550, 6811650, 564900, 6812300)
+INTERCHANGE_ZOOM = 18
+# Cyan translucent fill for the input polygon, thin magenta line on top for
+# the centerline — different enough in both hue and weight that the line
+# reads as a distinct object sitting on the fill, not just a thicker outline
+# of it. Neither color occurs naturally in satellite imagery, so both stay
+# high-contrast against every real background (fields, dirt, pavement).
+INPUT_COLOR = "#00c8ff"
+CENTERLINE_COLOR = "#ff2079"
 
 
 def figure_real_interchange_satellite(gdf: gpd.GeoDataFrame) -> None:
-    """The messiest real interchange in the fixture, overlaid on actual
-    aerial imagery: input road-surface polygons vs. the extracted
-    centerlines, side by side on the same satellite basemap. Requires
-    network access and the optional `contextily` dependency."""
+    """One real road-surface polygon (a motorway segment with a branching
+    exit ramp and a loop ramp), overlaid on actual aerial imagery: the input
+    polygon (translucent fill) with its extracted centerline (thin line) on
+    top, in the same panel. Requires network access and the optional
+    `contextily` dependency."""
     import contextily as cx
 
-    centerlines = compute_centerlines(gdf)
-    gdf_clip = gdf.clip(INTERCHANGE_BBOX_WGS84).to_crs(3857)
-    centerlines_clip = centerlines.clip(INTERCHANGE_BBOX_WGS84).to_crs(3857)
+    row = gdf[gdf["osm_id"] == INTERCHANGE_OSM_ID]
+    centerline = compute_centerlines(row)
+    row_clip = row.to_crs(3857).clip(INTERCHANGE_BBOX_3857)
+    centerline_clip = centerline.to_crs(3857).clip(INTERCHANGE_BBOX_3857)
 
-    fig, axes = plt.subplots(1, 2, figsize=(8, 4.3))
-
-    gdf_clip.plot(
-        ax=axes[0],
-        facecolor=OVERLAY_COLOR,
-        edgecolor=OVERLAY_COLOR,
-        alpha=0.55,
-        linewidth=0.6,
-        zorder=2,
+    x0, y0, x1, y1 = INTERCHANGE_BBOX_3857
+    fig, ax = plt.subplots(figsize=(9, 9 * (y1 - y0) / (x1 - x0)))
+    row_clip.plot(
+        ax=ax, facecolor=INPUT_COLOR, edgecolor=INPUT_COLOR, alpha=0.45, linewidth=0.8, zorder=2
     )
-    axes[0].set_title("Input: road-surface polygons (OSM)", fontsize=9)
-
-    centerlines_clip.plot(ax=axes[1], color=OVERLAY_COLOR, linewidth=2.2, zorder=2)
-    axes[1].set_title("compute_centerlines()", fontsize=9)
-
-    for ax in axes:
-        cx.add_basemap(
-            ax, source=cx.providers.Esri.WorldImagery, zoom=INTERCHANGE_ZOOM, attribution=False
-        )
-        ax.set_axis_off()
-    fig.text(
-        0.005,
+    centerline_clip.plot(ax=ax, color=CENTERLINE_COLOR, linewidth=1.3, zorder=3)
+    cx.add_basemap(ax, source=cx.providers.Esri.WorldImagery, zoom=INTERCHANGE_ZOOM, attribution=False)
+    ax.set_axis_off()
+    ax.text(
         0.01,
+        0.02,
         "Imagery: Esri, Maxar, Earthstar Geographics, and the GIS User Community",
-        fontsize=5,
-        color="dimgray",
+        transform=ax.transAxes,
+        fontsize=6,
+        color="white",
+        path_effects=[patheffects.withStroke(linewidth=2, foreground="black")],
     )
     fig.tight_layout()
     _save(
         fig,
         "real-interchange-satellite.jpg",
-        dpi=140,
+        dpi=150,
         format="jpg",
-        pil_kwargs={"quality": 85, "optimize": True},
+        pil_kwargs={"quality": 88, "optimize": True},
     )
 
 

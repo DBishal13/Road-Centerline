@@ -13,10 +13,11 @@ in any input CRS, in any format geopandas can read or write.
 [How this compares](https://dbishal13.github.io/Road-Centerline/comparison/) ·
 [Changelog](CHANGELOG.md)
 
-A real motorway interchange near Utrecht (OSM road-surface polygons, left)
-and its extracted centerlines (right), on actual aerial imagery:
+A real motorway exit ramp and loop near Utrecht: the OSM road-surface
+polygon (cyan fill) with its extracted centerline (magenta line) overlaid,
+on actual aerial imagery:
 
-<img src="https://raw.githubusercontent.com/DBishal13/Road-Centerline/main/docs/assets/img/real-interchange-satellite.jpg" width="600" alt="A real motorway interchange: road-surface polygons on the left, extracted centerlines on the right, both overlaid on satellite imagery">
+<img src="https://raw.githubusercontent.com/DBishal13/Road-Centerline/main/docs/assets/img/real-interchange-satellite.jpg" width="600" alt="A real motorway interchange: the road-surface polygon in cyan, with its extracted centerline in magenta overlaid on top, both on real satellite imagery">
 
 Given a polygon representing a road's outline, `road-centerline` optionally
 densifies its edges (adding vertices so long, straight edges don't starve the

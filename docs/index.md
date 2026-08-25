@@ -4,10 +4,11 @@ Extract road centerlines from polygon geometries (road contours) — worldwide,
 in any input CRS, in any format [geopandas](https://geopandas.org/) can read
 or write.
 
-A real motorway interchange near Utrecht (OSM road-surface polygons, left)
-and its extracted centerlines (right), on actual aerial imagery:
+A real motorway exit ramp and loop near Utrecht: the OSM road-surface
+polygon (cyan fill) with its extracted centerline (magenta line) overlaid,
+on actual aerial imagery:
 
-![A real motorway interchange: road-surface polygons on the left, extracted centerlines on the right, both overlaid on satellite imagery](assets/img/real-interchange-satellite.jpg)
+![A real motorway interchange: the road-surface polygon in cyan, with its extracted centerline in magenta overlaid on top, both on real satellite imagery](assets/img/real-interchange-satellite.jpg)
 
 Given a polygon representing a road's outline, `road-centerline` optionally
 densifies its edges (adding vertices so long, straight edges don't starve the

@@ -22,10 +22,12 @@ gdf = gpd.read_file("tests/fixtures/utrecht_roads.geojson")
 centerlines = compute_centerlines(gdf, densify_distance=10.0)
 ```
 
-The messiest interchange in the fixture, overlaid on real aerial imagery —
-input polygons on the left, extracted centerlines on the right:
+A real road-surface polygon from the fixture — a motorway segment with a
+branching exit ramp and a loop — with its extracted centerline overlaid on
+real aerial imagery (cyan fill: the input polygon; magenta line: the
+centerline `compute_centerlines()` returns for it):
 
-![A real motorway interchange: road-surface polygons on the left, extracted centerlines on the right, both overlaid on satellite imagery](assets/img/real-interchange-satellite.jpg)
+![A real motorway interchange: the road-surface polygon in cyan, with its extracted centerline in magenta overlaid on top, both on real satellite imagery](assets/img/real-interchange-satellite.jpg)
 
 ## Robustness to invalid input
 
