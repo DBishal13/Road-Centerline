@@ -133,3 +133,27 @@ def test_process_file_build_network_non_gpkg_writes_sibling_nodes_file(
     assert nodes_path.exists()
     reloaded_nodes = gpd.read_file(nodes_path)
     assert reloaded_nodes.crs == road_gdf_geographic.crs
+
+
+def test_process_file_ambiguous_extension_raises_without_driver(tmp_path, road_gdf_projected):
+    from road_centerline.exceptions import AmbiguousDriverError
+
+    input_path = tmp_path / "road.geojson"
+    road_gdf_projected.to_file(input_path)
+
+    with pytest.raises(AmbiguousDriverError):
+        process_file(str(input_path), str(tmp_path / "road_centerline.kml"))
+
+
+def test_process_file_ambiguous_extension_succeeds_with_explicit_driver(
+    tmp_path, road_gdf_projected
+):
+    input_path = tmp_path / "road.geojson"
+    output_path = tmp_path / "road_centerline.kml"
+    road_gdf_projected.to_file(input_path)
+
+    result = process_file(str(input_path), str(output_path), driver="KML")
+
+    assert len(result) == len(road_gdf_projected)
+    assert output_path.is_file()  # not a Shapefile directory fallback
+    assert output_path.read_text()[:5] == "<?xml"

@@ -14,6 +14,7 @@ import shapely
 from road_centerline.attributes import add_road_attributes
 from road_centerline.crs import CRSLike, resolve_working_crs
 from road_centerline.densify import densify_geoseries
+from road_centerline.formats import resolve_output_driver
 from road_centerline.network import build_network as _build_network
 from road_centerline.validate import find_unusable, repair_geometries
 
@@ -220,12 +221,21 @@ def process_file(
     *,
     build_network: bool = False,
     snap_tolerance: float = 1.0,
+    driver: str | None = None,
     **compute_centerlines_kwargs,
 ) -> gpd.GeoDataFrame:
     """Read polygons from `input_path`, compute centerlines, write to `output_path`.
 
-    Input/output formats are inferred from file extension (e.g. .shp,
-    .geojson, .gpkg) via geopandas' read_file/to_file.
+    Input format is auto-detected by GDAL from the file's own content/
+    signature (not just its extension), so it handles virtually any GIS
+    vector format geopandas/pyogrio can read — Shapefile, GeoJSON,
+    GeoPackage, FlatGeobuf, GML, KML, MapInfo, and dozens more.
+
+    Output format is inferred from `output_path`'s extension where that's
+    unambiguous. Some extensions (`.kml` in particular, which matches both
+    the KML and LIBKML drivers) aren't — pass `driver` explicitly (e.g.
+    `driver="KML"`; CLI: `--driver KML`) for those, or `AmbiguousDriverError`
+    is raised rather than silently writing the wrong format.
 
     If `build_network` is set, the centerlines are additionally run through
     `road_centerline.build_network()` (in the metric working CRS, so
@@ -237,11 +247,12 @@ def process_file(
     """
     logger.info("Reading polygons from %s", input_path)
     gdf = gpd.read_file(input_path)
+    resolved_driver = resolve_output_driver(output_path, driver)
 
     if not build_network:
         result = compute_centerlines(gdf, **compute_centerlines_kwargs)
         logger.info("Writing centerlines to %s", output_path)
-        result.to_file(output_path)
+        result.to_file(output_path, driver=resolved_driver)
         return result
 
     metric_result, original_crs = _compute_centerlines_metric(gdf, **compute_centerlines_kwargs)
@@ -252,11 +263,11 @@ def process_file(
     output_path = Path(output_path)
     if output_path.suffix.lower() == ".gpkg":
         logger.info("Writing network edges/nodes to %s (layers 'edges'/'nodes')", output_path)
-        edges.to_file(output_path, layer="edges")
-        nodes.to_file(output_path, layer="nodes")
+        edges.to_file(output_path, layer="edges", driver=resolved_driver)
+        nodes.to_file(output_path, layer="nodes", driver=resolved_driver)
     else:
         nodes_path = output_path.with_name(f"{output_path.stem}_nodes{output_path.suffix}")
         logger.info("Writing network edges to %s, nodes to %s", output_path, nodes_path)
-        edges.to_file(output_path)
-        nodes.to_file(nodes_path)
+        edges.to_file(output_path, driver=resolved_driver)
+        nodes.to_file(nodes_path, driver=resolved_driver)
     return edges

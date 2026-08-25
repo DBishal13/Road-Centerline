@@ -34,3 +34,28 @@ def test_missing_input_file_nonzero_exit(tmp_path):
         main, [str(tmp_path / "does_not_exist.geojson"), str(tmp_path / "out.geojson")]
     )
     assert result.exit_code != 0
+
+
+def test_ambiguous_output_extension_nonzero_exit_without_driver(tmp_path, road_gdf_projected):
+    input_path = tmp_path / "road.geojson"
+    output_path = tmp_path / "road_centerline.kml"
+    road_gdf_projected.to_file(input_path)
+
+    runner = CliRunner()
+    result = runner.invoke(main, [str(input_path), str(output_path)])
+
+    assert result.exit_code != 0
+    assert not output_path.exists()
+
+
+def test_driver_flag_writes_requested_format(tmp_path, road_gdf_projected):
+    input_path = tmp_path / "road.geojson"
+    output_path = tmp_path / "road_centerline.kml"
+    road_gdf_projected.to_file(input_path)
+
+    runner = CliRunner()
+    result = runner.invoke(main, [str(input_path), str(output_path), "--driver", "KML"])
+
+    assert result.exit_code == 0, result.output
+    assert output_path.is_file()
+    assert output_path.read_text()[:5] == "<?xml"

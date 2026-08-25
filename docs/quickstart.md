@@ -23,7 +23,8 @@ road-centerline Road.shp Road_Centerline.gpkg --build-network --snap-tolerance 1
 
 Run `road-centerline --help` for all options, including `--target-crs`,
 `--assume-crs`, `--no-densify`, `--on-error`, `--n-jobs`,
-`--build-network`/`--snap-tolerance`, and the `pygeoops.centerline`
+`--build-network`/`--snap-tolerance`, `--driver` (see
+[Supported formats](#supported-formats)), and the `pygeoops.centerline`
 pass-through options (`--extend`, `--min-branch-length`,
 `--simplify-tolerance`, `--pygeoops-densify-distance`).
 
@@ -69,5 +70,28 @@ geographic ones.
 
 ## Supported formats
 
-Any format geopandas can read/write via its I/O backend (pyogrio), inferred
-from the file extension — including `.shp`, `.geojson`, and `.gpkg`.
+Input and output both go through GDAL/OGR (via geopandas' pyogrio backend),
+so virtually any GIS vector format works — Shapefile, GeoJSON, GeoPackage,
+FlatGeobuf, GML, KML, MapInfo, CSV with WKT, and dozens more. See GDAL's
+[vector driver list](https://gdal.org/en/stable/drivers/vector/) for the
+full set.
+
+Reading auto-detects the format from the file's own content, not just its
+extension. Writing infers the driver from `output_path`'s extension where
+that's unambiguous. A few extensions map to more than one driver — `.kml`
+in particular matches both KML and LIBKML — and for those you must pass an
+explicit driver:
+
+```sh
+road-centerline Road.shp Road_Centerline.kml --driver KML
+```
+
+```python
+process_file("Road.shp", "Road_Centerline.kml", driver="KML")
+```
+
+Without it, `AmbiguousDriverError` is raised rather than silently writing
+the wrong format — `GeoDataFrame.to_file()`'s own default behavior for an
+unresolvable extension is to fall back to ESRI Shapefile with no error or
+warning, which produces valid-looking output that's quietly not what you
+asked for.

@@ -18,6 +18,17 @@ All notable changes to this project are documented here. Format follows
 - `Notebooks/centerline.ipynb` rewritten to actually run against the real
   fixture (it previously referenced a `Road.shp` that didn't exist in the
   repo); CI now executes it on every push so it can't go stale again.
+- `driver` parameter (`process_file`) / `--driver` flag (CLI) to explicitly
+  select the output GIS format, for extensions GDAL can't infer a driver
+  from unambiguously (e.g. `.kml`, which matches both KML and LIBKML).
+
+### Fixed
+
+- Writing to an ambiguous or unrecognized output extension now raises
+  `AmbiguousDriverError` instead of silently falling back to ESRI
+  Shapefile — `GeoDataFrame.to_file()`'s own default behavior in that
+  situation, which produced valid-looking output in the wrong format with
+  no error or warning.
 
 ## [0.2.0] - 2026-08-24
 

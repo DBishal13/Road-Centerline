@@ -32,8 +32,9 @@ snap adjoining centerlines into a connected network.
   lat/lon), distances are computed in an automatically-estimated local UTM
   zone, then the result is reprojected back to the original CRS. Works
   anywhere on Earth — no manual projection setup required.
-- **Any format geopandas supports**: Shapefile, GeoJSON, GeoPackage, and more
-  — the format is inferred from the file extension.
+- **Any GDAL/OGR vector format**: Shapefile, GeoJSON, GeoPackage, FlatGeobuf,
+  GML, KML, MapInfo, and dozens more — see
+  [Supported formats](https://dbishal13.github.io/Road-Centerline/quickstart/#supported-formats).
 - **Vectorized**: centerlines are computed for an entire layer in a single
   `pygeoops.centerline` call rather than row by row (opt into `n_jobs` for
   parallel chunking on very large batches).

@@ -32,9 +32,18 @@
 
 ::: road_centerline.densify.densify_geoseries
 
+## Formats
+
+See [Supported formats](quickstart.md#supported-formats) for context on
+when `driver` is needed.
+
+::: road_centerline.formats.resolve_output_driver
+
 ## Exceptions
 
 ::: road_centerline.exceptions.MissingCRSError
+
+::: road_centerline.exceptions.AmbiguousDriverError
 
 ## CLI
 

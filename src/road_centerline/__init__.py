@@ -10,11 +10,13 @@ from road_centerline.attributes import add_road_attributes
 from road_centerline.core import compute_centerlines, process_file
 from road_centerline.crs import resolve_working_crs
 from road_centerline.densify import densify_geometry, densify_geoseries
-from road_centerline.exceptions import MissingCRSError
+from road_centerline.exceptions import AmbiguousDriverError, MissingCRSError
+from road_centerline.formats import resolve_output_driver
 from road_centerline.network import build_network, to_networkx
 from road_centerline.validate import find_unusable, repair_geometries
 
 __all__ = [
+    "AmbiguousDriverError",
     "MissingCRSError",
     "__version__",
     "add_road_attributes",
@@ -25,6 +27,7 @@ __all__ = [
     "find_unusable",
     "process_file",
     "repair_geometries",
+    "resolve_output_driver",
     "resolve_working_crs",
     "to_networkx",
 ]

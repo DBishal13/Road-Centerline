@@ -77,6 +77,13 @@ def _level_from_count(count: int) -> int:
     "of disconnected per-polygon lines.",
 )
 @click.option("--snap-tolerance", type=float, default=1.0, show_default=True)
+@click.option(
+    "--driver",
+    default=None,
+    help="GDAL/OGR driver to write with, overriding extension-based detection. Required for "
+    "extensions that map to more than one driver (e.g. .kml: KML vs LIBKML). See "
+    "https://gdal.org/en/stable/drivers/vector/ for driver names.",
+)
 @click.option("-v", "--verbose", count=True, help="Increase log verbosity (-v, -vv).")
 @click.version_option()
 def main(
@@ -96,6 +103,7 @@ def main(
     n_jobs: int,
     build_network: bool,
     snap_tolerance: float,
+    driver: str | None,
     verbose: int,
 ) -> None:
     """Compute road centerlines from a polygon file (shapefile, GeoJSON, GeoPackage, ...)."""
@@ -120,6 +128,7 @@ def main(
             n_jobs=n_jobs,
             build_network=build_network,
             snap_tolerance=snap_tolerance,
+            driver=driver,
         )
     except Exception:
         logger.exception("Failed to compute centerlines")
