@@ -180,15 +180,20 @@ def figure_real_interchange_satellite(gdf: gpd.GeoDataFrame) -> None:
 
     row = gdf[gdf["osm_id"] == INTERCHANGE_OSM_ID]
     # The default simplifytolerance (-0.25, pygeoops' own auto mode) visibly
-    # cuts the corner on this loop ramp's tight curve radius. But this one
-    # polygon also has a long straight section, and dropping the magnitude
-    # too far (tested -0.05) reintroduces the Voronoi skeleton's natural
-    # zigzag noise there — less simplification hugs curves better but stops
-    # smoothing out that noise. -0.1 was the best balance of the values
-    # tested: hugs the loop closely without visibly zigzagging the straight
-    # run. This is a per-figure tuning choice, not a change to the library's
-    # default.
-    centerline = compute_centerlines(row, simplifytolerance=-0.1)
+    # cuts the corner on this loop ramp's tight curve radius. Lowering just
+    # the tolerance (tried -0.1, -0.05) re-exposed the Voronoi skeleton's
+    # natural zigzag noise on this polygon's long straight run instead —
+    # simplifytolerance alone can't fix both a tight curve and a straight
+    # run at once. densify_distance is the other lever: finer pre-
+    # densification (5.0 vs the 10.0 default) gives the skeleton a more
+    # uniform, symmetric set of boundary points to work from, which turned
+    # out to remove the zigzag far more effectively than more aggressive
+    # simplification did — confirmed by testing densify_distance up to 50
+    # and disabled entirely, which made the zigzag worse, not better.
+    # densify_distance=5 + simplifytolerance=-0.15 was the cleanest of every
+    # combination tested on both the loop and the straight run. Per-figure
+    # tuning choice, not a change to the library's defaults.
+    centerline = compute_centerlines(row, densify_distance=5.0, simplifytolerance=-0.15)
     row_clip = row.to_crs(3857).clip(INTERCHANGE_BBOX_3857)
     centerline_clip = centerline.to_crs(3857).clip(INTERCHANGE_BBOX_3857)
 
