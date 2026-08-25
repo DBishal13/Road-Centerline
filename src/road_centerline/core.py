@@ -15,6 +15,7 @@ from road_centerline.attributes import add_road_attributes
 from road_centerline.crs import CRSLike, resolve_working_crs
 from road_centerline.densify import densify_geoseries
 from road_centerline.formats import resolve_output_driver
+from road_centerline.merge import merge_parallel_polygons
 from road_centerline.network import build_network as _build_network
 from road_centerline.validate import find_unusable, repair_geometries
 
@@ -91,6 +92,9 @@ def compute_centerlines(
     on_error: Literal["raise", "skip"] = "raise",
     add_attributes: bool = True,
     n_jobs: int = 1,
+    merge_parallel: bool = False,
+    merge_gap_threshold: float = 8.0,
+    merge_angle_threshold: float = 15.0,
 ) -> gpd.GeoDataFrame:
     """Compute centerlines for a GeoDataFrame of polygons.
 
@@ -125,6 +129,16 @@ def compute_centerlines(
     distance in the GeoDataFrame's own CRS units, which is meaningless in
     degrees. `process_file(..., build_network=True)` already handles this
     correctly by networking in the metric working CRS.
+
+    merge_parallel: run `merge_parallel_polygons()` (gap + orientation
+    grouping, not area overlap — see that function's docstring for why)
+    before centerlining, so a road split into several nearby parallel
+    carriageway/lane polygons produces one centerline instead of one per
+    polygon. Off by default: unlike `repair_invalid`, this changes the
+    output's row count and attribute values, so it's an opt-in choice, not
+    a silent improvement. `merge_gap_threshold`/`merge_angle_threshold` are
+    passed through; call `merge_parallel_polygons()` directly first if you
+    need `aggfunc` control over non-geometry columns.
     """
     result, original_crs = _compute_centerlines_metric(
         gdf,
@@ -140,6 +154,9 @@ def compute_centerlines(
         on_error=on_error,
         add_attributes=add_attributes,
         n_jobs=n_jobs,
+        merge_parallel=merge_parallel,
+        merge_gap_threshold=merge_gap_threshold,
+        merge_angle_threshold=merge_angle_threshold,
     )
     if original_crs is not None and result.crs != original_crs:
         result = result.to_crs(original_crs)
@@ -161,6 +178,9 @@ def _compute_centerlines_metric(
     on_error: Literal["raise", "skip"] = "raise",
     add_attributes: bool = True,
     n_jobs: int = 1,
+    merge_parallel: bool = False,
+    merge_gap_threshold: float = 8.0,
+    merge_angle_threshold: float = 15.0,
 ) -> tuple[gpd.GeoDataFrame, object | None]:
     """Same as `compute_centerlines`, but returns (result, original_crs) without
     reprojecting back — used internally so network building can happen in metric
@@ -188,6 +208,13 @@ def _compute_centerlines_metric(
             working_gdf.index[unusable].tolist(),
         )
         working_gdf = working_gdf.loc[~unusable]
+
+    if merge_parallel:
+        before = len(working_gdf)
+        working_gdf = merge_parallel_polygons(
+            working_gdf, gap_threshold=merge_gap_threshold, angle_threshold=merge_angle_threshold
+        )
+        logger.info("merge_parallel: %d polygons -> %d after merging", before, len(working_gdf))
 
     polygon_areas = working_gdf.geometry.area
 

@@ -30,6 +30,7 @@ nav:
   - Home: index.md
   - Quickstart: quickstart.md
   - Building a network: network.md
+  - Merging parallel polygons: merging.md
   - Robustness at scale: robustness.md
   - How this compares: comparison.md
   - Demo: demo.md

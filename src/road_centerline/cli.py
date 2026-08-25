@@ -78,6 +78,15 @@ def _level_from_count(count: int) -> int:
 )
 @click.option("--snap-tolerance", type=float, default=1.0, show_default=True)
 @click.option(
+    "--merge-parallel/--no-merge-parallel",
+    default=False,
+    show_default=True,
+    help="Merge nearby, similarly-oriented polygons (e.g. split carriageways of the same "
+    "road) before centerlining, so they produce one centerline instead of one each.",
+)
+@click.option("--merge-gap-threshold", type=float, default=8.0, show_default=True)
+@click.option("--merge-angle-threshold", type=float, default=15.0, show_default=True)
+@click.option(
     "--driver",
     default=None,
     help="GDAL/OGR driver to write with, overriding extension-based detection. Required for "
@@ -103,6 +112,9 @@ def main(
     n_jobs: int,
     build_network: bool,
     snap_tolerance: float,
+    merge_parallel: bool,
+    merge_gap_threshold: float,
+    merge_angle_threshold: float,
     driver: str | None,
     verbose: int,
 ) -> None:
@@ -128,6 +140,9 @@ def main(
             n_jobs=n_jobs,
             build_network=build_network,
             snap_tolerance=snap_tolerance,
+            merge_parallel=merge_parallel,
+            merge_gap_threshold=merge_gap_threshold,
+            merge_angle_threshold=merge_angle_threshold,
             driver=driver,
         )
     except Exception:

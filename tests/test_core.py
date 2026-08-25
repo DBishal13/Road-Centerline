@@ -4,7 +4,7 @@ import geopandas as gpd
 import numpy as np
 import pandas as pd
 import pytest
-from shapely.geometry import LineString, Polygon
+from shapely.geometry import LineString, Polygon, box
 
 from road_centerline.core import compute_centerlines, process_file
 
@@ -157,3 +157,17 @@ def test_process_file_ambiguous_extension_succeeds_with_explicit_driver(
     assert len(result) == len(road_gdf_projected)
     assert output_path.is_file()  # not a Shapefile directory fallback
     assert output_path.read_text()[:5] == "<?xml"
+
+
+def test_merge_parallel_reduces_output_rows():
+    # two 10x100 strips, 5m apart, running parallel -> same physical road
+    a = box(0, 0, 100, 10)
+    b = box(0, 15, 100, 25)
+    gdf = gpd.GeoDataFrame({"id": [1, 2]}, geometry=[a, b], crs="EPSG:32633")
+
+    without_merge = compute_centerlines(gdf, densify_distance=5.0)
+    with_merge = compute_centerlines(gdf, densify_distance=5.0, merge_parallel=True)
+
+    assert len(without_merge) == 2
+    assert len(with_merge) == 1
+    assert with_merge["merged_count"].iloc[0] == 2

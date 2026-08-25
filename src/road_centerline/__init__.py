@@ -12,6 +12,7 @@ from road_centerline.crs import resolve_working_crs
 from road_centerline.densify import densify_geometry, densify_geoseries
 from road_centerline.exceptions import AmbiguousDriverError, MissingCRSError
 from road_centerline.formats import resolve_output_driver
+from road_centerline.merge import merge_parallel_polygons
 from road_centerline.network import build_network, to_networkx
 from road_centerline.validate import find_unusable, repair_geometries
 
@@ -25,6 +26,7 @@ __all__ = [
     "densify_geometry",
     "densify_geoseries",
     "find_unusable",
+    "merge_parallel_polygons",
     "process_file",
     "repair_geometries",
     "resolve_output_driver",

@@ -21,6 +21,17 @@ All notable changes to this project are documented here. Format follows
 - `driver` parameter (`process_file`) / `--driver` flag (CLI) to explicitly
   select the output GIS format, for extensions GDAL can't infer a driver
   from unambiguously (e.g. `.kml`, which matches both KML and LIBKML).
+- `merge_parallel_polygons()`, and `merge_parallel`/`merge_gap_threshold`/
+  `merge_angle_threshold` on `compute_centerlines`/CLI: groups nearby,
+  similarly-oriented polygons (e.g. split carriageways of the same road)
+  before centerlining, so a busy interchange with many carriageway/ramp
+  polygons converging at one point produces one centerline per physical
+  road instead of one per polygon. Grouping is gap distance + orientation
+  based, not area overlap (IoU) — verified IoU can't tell "same road, split
+  carriageways" apart from "different roads crossing" on real data; see
+  the [Merging parallel polygons](https://dbishal13.github.io/Road-Centerline/merging/)
+  docs page for the numbers. Off by default — changes output row count and
+  attribute values, so it's an opt-in preprocessing step.
 
 ### Fixed
 

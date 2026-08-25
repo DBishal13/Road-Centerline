@@ -47,10 +47,15 @@ snap adjoining centerlines into a connected network.
   share a junction into a connected edges/nodes graph, rather than the
   disconnected per-polygon lines you get from calling `pygeoops.centerline`
   directly.
+- **Merge parallel polygons**: `merge_parallel_polygons()` groups nearby,
+  similarly-oriented polygons (e.g. split carriageways of the same road)
+  before centerlining, so a busy interchange produces one centerline per
+  physical road instead of one per carriageway/lane polygon.
 - **CLI and Python API**.
 
 Full details on each: [Quickstart](https://dbishal13.github.io/Road-Centerline/quickstart/) ·
 [Building a network](https://dbishal13.github.io/Road-Centerline/network/) ·
+[Merging parallel polygons](https://dbishal13.github.io/Road-Centerline/merging/) ·
 [Robustness at scale](https://dbishal13.github.io/Road-Centerline/robustness/).
 
 ## Installation

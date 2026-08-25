@@ -9,36 +9,18 @@ import shapely
 from shapely import Point
 from shapely.strtree import STRtree
 
+from road_centerline._unionfind import UnionFind
+
 if TYPE_CHECKING:
     import networkx as nx
 
 logger = logging.getLogger(__name__)
 
 
-class _UnionFind:
-    """Minimal union-find so nearby endpoints merge transitively (A~B, B~C => A~C)."""
-
-    def __init__(self, size: int) -> None:
-        self._parent = list(range(size))
-
-    def find(self, i: int) -> int:
-        root = i
-        while self._parent[root] != root:
-            root = self._parent[root]
-        while self._parent[i] != root:
-            self._parent[i], i = root, self._parent[i]
-        return root
-
-    def union(self, a: int, b: int) -> None:
-        ra, rb = self.find(a), self.find(b)
-        if ra != rb:
-            self._parent[ra] = rb
-
-
 def _cluster_points(points: np.ndarray, tolerance: float) -> np.ndarray:
     """Return a cluster id per point, merging points within `tolerance` (transitively)."""
     n = len(points)
-    uf = _UnionFind(n)
+    uf = UnionFind(n)
     tree = STRtree([Point(p) for p in points])
     for i, p in enumerate(points):
         for j in tree.query(Point(p), predicate="dwithin", distance=tolerance):

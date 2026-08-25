@@ -22,6 +22,13 @@
 
 ::: road_centerline.network.to_networkx
 
+## Merging
+
+See [Merging parallel polygons](merging.md) for why this is gap+orientation
+based rather than an area-overlap metric like IoU.
+
+::: road_centerline.merge.merge_parallel_polygons
+
 ## CRS
 
 ::: road_centerline.crs.resolve_working_crs

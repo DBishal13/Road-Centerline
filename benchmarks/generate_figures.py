@@ -243,6 +243,58 @@ def figure_real_junction_crop(metric_centerlines: gpd.GeoDataFrame) -> None:
     _save(fig, "real-junction-crop.png")
 
 
+# The same stack interchange used by figure_real_interchange_satellite, but
+# the full area (not one isolated polygon) — this is where ~20 separate
+# carriageway/ramp polygons genuinely converge, the case merge_parallel_
+# polygons() targets. Self-contained: clips the fixture itself rather than
+# depending on any file from outside the repo.
+MERGE_AREA_BBOX_WGS84 = (5.058, 52.058, 5.082, 52.078)
+MERGE_CROSSING_BBOX_3857 = (564450, 6811550, 565150, 6812450)
+
+
+def figure_merge_before_after(gdf: gpd.GeoDataFrame) -> None:
+    """The real interchange's busiest crossing point, before and after
+    merge_parallel_polygons(): many individually-correct-but-overlapping
+    centerlines vs. one clean line per physical road. Requires network
+    access and the optional `contextily` dependency."""
+    import contextily as cx
+
+    area = gdf.clip(MERGE_AREA_BBOX_WGS84)
+    before = compute_centerlines(area)
+    after = compute_centerlines(area, merge_parallel=True)
+
+    before_clip = before.to_crs(3857).clip(MERGE_CROSSING_BBOX_3857)
+    after_clip = after.to_crs(3857).clip(MERGE_CROSSING_BBOX_3857)
+
+    fig, axes = plt.subplots(1, 2, figsize=(9, 4.6))
+    before_clip.plot(ax=axes[0], color=CENTERLINE_COLOR, linewidth=1.6, zorder=2)
+    axes[0].set_title(f"Before: {len(before)} separate centerlines", fontsize=9)
+
+    after_clip.plot(ax=axes[1], color=CENTERLINE_COLOR, linewidth=1.6, zorder=2)
+    axes[1].set_title(f"After merge_parallel=True: {len(after)} centerlines", fontsize=9)
+
+    for ax in axes:
+        cx.add_basemap(ax, source=cx.providers.Esri.WorldImagery, zoom=17, attribution=False)
+        ax.set_axis_off()
+    axes[0].text(
+        0.01,
+        0.02,
+        "Imagery: Esri, Maxar, Earthstar Geographics, and the GIS User Community",
+        transform=axes[0].transAxes,
+        fontsize=5,
+        color="white",
+        path_effects=[patheffects.withStroke(linewidth=2, foreground="black")],
+    )
+    fig.tight_layout()
+    _save(
+        fig,
+        "merge-before-after.jpg",
+        dpi=150,
+        format="jpg",
+        pil_kwargs={"quality": 88, "optimize": True},
+    )
+
+
 def figure_benchmark_chart(gdf: gpd.GeoDataFrame) -> None:
     working_gdf, _ = resolve_working_crs(gdf)
 
@@ -292,6 +344,7 @@ def main() -> None:
     figure_repair_before_after()
     figure_real_junction_crop(metric_centerlines)
     figure_real_interchange_satellite(gdf)
+    figure_merge_before_after(gdf)
     figure_benchmark_chart(gdf)
 
 
